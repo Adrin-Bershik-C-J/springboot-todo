@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.springboot.todo.dto.ToDoRequestDTO;
 import com.springboot.todo.dto.ToDoResponseDTO;
+import com.springboot.todo.dto.ToDoUpdateDTO;
 import com.springboot.todo.entity.ToDo;
 import com.springboot.todo.entity.User;
 import com.springboot.todo.exception.ResourceNotFoundException;
@@ -21,7 +22,6 @@ public class ToDoService {
     private final ToDoRepository toDoRepository;
     private final UserRepository userRepository;
 
-    // Create Task
     public ToDoResponseDTO createTask(ToDoRequestDTO newTask, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -35,11 +35,9 @@ public class ToDoService {
         todo.setUser(user);
 
         ToDo saved = toDoRepository.save(todo);
-
         return mapToResponse(saved);
     }
 
-    // Get Single Task
     public ToDoResponseDTO getTaskById(Long id, String username) {
         ToDo task = toDoRepository.findById(id)
                 .filter(todo -> todo.getUser().getUsername().equals(username))
@@ -48,14 +46,12 @@ public class ToDoService {
         return mapToResponse(task);
     }
 
-    // Get All Tasks (Paginated + Sorted)
     public Page<ToDoResponseDTO> getAllTasks(String username, Pageable pageable) {
         return toDoRepository.findByUserUsername(username, pageable)
                 .map(this::mapToResponse);
     }
 
-    // Update Task
-    public ToDoResponseDTO updateTask(Long id, ToDoRequestDTO updateDTO, String username) {
+    public ToDoResponseDTO updateTask(Long id, ToDoUpdateDTO updateDTO, String username) {
         ToDo task = toDoRepository.findById(id)
                 .filter(todo -> todo.getUser().getUsername().equals(username))
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found or not accessible"));
@@ -70,7 +66,6 @@ public class ToDoService {
         return mapToResponse(updated);
     }
 
-    // Delete Task
     public void deleteTask(Long id, String username) {
         ToDo task = toDoRepository.findById(id)
                 .filter(todo -> todo.getUser().getUsername().equals(username))
@@ -78,9 +73,9 @@ public class ToDoService {
         toDoRepository.delete(task);
     }
 
-    // Mapper
     private ToDoResponseDTO mapToResponse(ToDo todo) {
         return new ToDoResponseDTO(
+                todo.getId(),
                 todo.getTitle(),
                 todo.getDescription(),
                 todo.getPriority(),

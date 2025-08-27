@@ -42,17 +42,16 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public boolean validateToken(String token, String username) {
-        return username.equals(extractUsername(token)) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration()
-                .before(new Date());
+    public boolean validateToken(String token) {
+        try {
+            var claims = Jwts.parserBuilder()
+                    .setSigningKey(getSignInKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getExpiration().after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

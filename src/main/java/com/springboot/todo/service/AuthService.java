@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.AuthRequest;
+import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.User;
 import com.springboot.todo.repository.UserRepository;
 import com.springboot.todo.security.JwtUtil;
@@ -36,5 +37,12 @@ public class AuthService {
         authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         return jwtUtil.generateToken(request.getUsername());
+    }
+
+    public UserResponseDTO getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return new UserResponseDTO(user.getId(), user.getUsername());
     }
 }

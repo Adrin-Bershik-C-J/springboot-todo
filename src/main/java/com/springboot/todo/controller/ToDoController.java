@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.springboot.todo.dto.ToDoRequestDTO;
 import com.springboot.todo.dto.ToDoResponseDTO;
+import com.springboot.todo.dto.ToDoUpdateDTO;
 import com.springboot.todo.service.ToDoService;
 
 import jakarta.validation.Valid;
@@ -21,7 +22,6 @@ public class ToDoController {
 
     private final ToDoService toDoService;
 
-    // Create task
     @PostMapping
     public ResponseEntity<ToDoResponseDTO> createTask(
             @Valid @RequestBody ToDoRequestDTO todoDto,
@@ -30,7 +30,6 @@ public class ToDoController {
                 .body(toDoService.createTask(todoDto, authentication.getName()));
     }
 
-    // Get single task by id
     @GetMapping("/{id}")
     public ResponseEntity<ToDoResponseDTO> getTaskById(
             @PathVariable Long id,
@@ -38,7 +37,6 @@ public class ToDoController {
         return ResponseEntity.ok(toDoService.getTaskById(id, authentication.getName()));
     }
 
-    // Get all tasks with pagination & sorting
     @GetMapping
     public ResponseEntity<Page<ToDoResponseDTO>> getAllTasks(
             Pageable pageable,
@@ -46,16 +44,14 @@ public class ToDoController {
         return ResponseEntity.ok(toDoService.getAllTasks(authentication.getName(), pageable));
     }
 
-    // Update a task
     @PatchMapping("/{id}")
     public ResponseEntity<ToDoResponseDTO> updateTask(
             @PathVariable Long id,
-            @RequestBody ToDoRequestDTO updated,
+            @RequestBody ToDoUpdateDTO updated,
             Authentication authentication) {
         return ResponseEntity.ok(toDoService.updateTask(id, updated, authentication.getName()));
     }
 
-    // Delete a task
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(
             @PathVariable Long id,

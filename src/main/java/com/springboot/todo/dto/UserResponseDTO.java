@@ -2,10 +2,12 @@ package com.springboot.todo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-public class AuthResponse {
-    private String token;
+public class UserResponseDTO {
+    private Long id;
     private String username;
 }

@@ -5,15 +5,11 @@ import java.time.LocalDateTime;
 import com.springboot.todo.enums.Priority;
 import com.springboot.todo.enums.Status;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+/** Partial update DTO — all fields optional */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ToDoResponseDTO {
-    private Long id;
+public class ToDoUpdateDTO {
     private String title;
     private String description;
     private Priority priority;
