@@ -1,9 +1,11 @@
 package com.springboot.todo.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.AuthRequest;
 import com.springboot.todo.entity.User;
@@ -23,7 +25,7 @@ public class AuthService {
 
     public String register(AuthRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
         User user = new User(request.getUsername(), passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
