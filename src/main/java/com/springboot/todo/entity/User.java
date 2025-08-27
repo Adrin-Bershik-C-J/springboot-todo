@@ -29,4 +29,10 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<ToDo> todos;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
 }
