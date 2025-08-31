@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.AuthRequest;
 import com.springboot.todo.dto.AuthResponse;
+import com.springboot.todo.dto.RegisterRequestDTO;
 import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.User;
 import com.springboot.todo.exception.ResourceNotFoundException;
@@ -28,11 +29,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public String register(AuthRequest request) {
+    public String register(RegisterRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
-        User user = new User(request.getUsername(), passwordEncoder.encode(request.getPassword()));
+        User user = new User(request.getName(), request.getUsername(), passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
         return "User registered successfully";
     }
@@ -48,6 +49,6 @@ public class AuthService {
     public UserResponseDTO getCurrentUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return new UserResponseDTO(user.getId(), user.getUsername());
+        return new UserResponseDTO(user.getId(), user.getUsername(), user.getName());
     }
 }

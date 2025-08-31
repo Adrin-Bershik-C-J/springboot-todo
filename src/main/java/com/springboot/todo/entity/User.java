@@ -31,11 +31,15 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String name;
+
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<ToDo> todos;
 
-    public User(String username, String password) {
+    public User(String name, String username, String password) {
+        this.name = name;
         this.username = username;
         this.password = password;
     }
