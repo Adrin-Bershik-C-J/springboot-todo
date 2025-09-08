@@ -1,6 +1,6 @@
 package com.springboot.todo.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.springboot.todo.enums.Priority;
 import com.springboot.todo.enums.Status;
@@ -18,5 +18,5 @@ public class ToDoResponseDTO {
     private String description;
     private Priority priority;
     private Status status;
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 }

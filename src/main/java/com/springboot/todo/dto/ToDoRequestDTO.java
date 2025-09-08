@@ -1,6 +1,6 @@
 package com.springboot.todo.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.springboot.todo.enums.Priority;
 import com.springboot.todo.enums.Status;
@@ -29,6 +29,6 @@ public class ToDoRequestDTO {
 
     @NotNull(message = "Due date is required")
     @FutureOrPresent(message = "Due date must be today or in the future")
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
 }

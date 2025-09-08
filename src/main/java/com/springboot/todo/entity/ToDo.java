@@ -1,6 +1,6 @@
 package com.springboot.todo.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.springboot.todo.enums.Priority;
 import com.springboot.todo.enums.Status;
@@ -31,7 +31,7 @@ public class ToDo {
 
     private String title;
     private String description;
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
     private Priority priority;
