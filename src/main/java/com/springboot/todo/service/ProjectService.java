@@ -3,6 +3,7 @@ package com.springboot.todo.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.ProjectRequestDTO;
@@ -15,6 +16,7 @@ import com.springboot.todo.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Service
 @RequiredArgsConstructor
 public class ProjectService {
 

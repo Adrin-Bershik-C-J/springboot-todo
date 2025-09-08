@@ -14,6 +14,7 @@ import com.springboot.todo.dto.AuthResponse;
 import com.springboot.todo.dto.RegisterRequestDTO;
 import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.User;
+import com.springboot.todo.enums.Role;
 import com.springboot.todo.exception.ResourceNotFoundException;
 import com.springboot.todo.repository.UserRepository;
 import com.springboot.todo.security.JwtUtil;
@@ -33,9 +34,10 @@ public class AuthService {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
-        User user = new User(request.getName(), request.getUsername(), passwordEncoder.encode(request.getPassword()));
+        User user = new User(request.getName(), request.getUsername(), passwordEncoder.encode(request.getPassword()),
+                Role.MEMBER);
         userRepository.save(user);
-        return "User registered successfully";
+        return "Member registered successfully";
     }
 
     public AuthResponse login(AuthRequest request) {

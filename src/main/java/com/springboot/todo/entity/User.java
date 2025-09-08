@@ -3,9 +3,12 @@ package com.springboot.todo.entity;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.springboot.todo.enums.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,13 +37,18 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<ToDo> todos;
 
-    public User(String name, String username, String password) {
+    public User(String name, String username, String password, Role role) {
         this.name = name;
         this.username = username;
         this.password = password;
+        this.role = role;
     }
 }
