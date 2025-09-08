@@ -57,8 +57,11 @@ public class ProjectService {
                 project.getMembers().stream().map(User::getUsername).toList());
     }
 
-    public List<Project> getProjectsByManager(String managerUsername) {
-        return projectRepository.findByManagerUsername(managerUsername);
-    }
+    public List<ProjectResponseDTO> getProjectsByManager(String managerUsername) {
+        List<Project> projects = projectRepository.findByManagerUsername(managerUsername);
 
+        return projects.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
 }
