@@ -10,6 +10,7 @@ import com.springboot.todo.dto.ProjectRequestDTO;
 import com.springboot.todo.dto.ProjectResponseDTO;
 import com.springboot.todo.entity.Project;
 import com.springboot.todo.entity.User;
+import com.springboot.todo.enums.Role;
 import com.springboot.todo.exception.ResourceNotFoundException;
 import com.springboot.todo.repository.ProjectRepository;
 import com.springboot.todo.repository.UserRepository;
@@ -29,6 +30,11 @@ public class ProjectService {
 
         User tl = userRepository.findById(dto.getTlId())
                 .orElseThrow(() -> new ResourceNotFoundException("TL not found"));
+
+        if (tl.getRole() != Role.TL) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Provided TL ID does not belong to a user with TL role");
+        }
 
         List<User> members = userRepository.findAllById(dto.getMemberIds());
         if (members.isEmpty()) {

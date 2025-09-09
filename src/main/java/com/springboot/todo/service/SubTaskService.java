@@ -2,13 +2,16 @@ package com.springboot.todo.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.SubTaskRequestDTO;
 import com.springboot.todo.dto.SubTaskResponseDTO;
 import com.springboot.todo.entity.Project;
 import com.springboot.todo.entity.SubTask;
 import com.springboot.todo.entity.User;
+import com.springboot.todo.enums.Role;
 import com.springboot.todo.enums.Status;
 import com.springboot.todo.exception.ResourceNotFoundException;
 import com.springboot.todo.repository.ProjectRepository;
@@ -20,66 +23,76 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SubTaskService {
-    private final SubTaskRepository subTaskRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
+        private final SubTaskRepository subTaskRepository;
+        private final ProjectRepository projectRepository;
+        private final UserRepository userRepository;
 
-    public SubTaskResponseDTO createSubTask(SubTaskRequestDTO requestDTO) {
-        Project project = projectRepository.findById(requestDTO.getProjectId())
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        public SubTaskResponseDTO createSubTask(SubTaskRequestDTO requestDTO) {
+                Project project = projectRepository.findById(requestDTO.getProjectId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        User tl = userRepository.findById(requestDTO.getTlId())
-                .orElseThrow(() -> new ResourceNotFoundException("TL not found"));
+                User tl = userRepository.findById(requestDTO.getTlId())
+                                .orElseThrow(() -> new ResourceNotFoundException("TL not found"));
 
-        User member = userRepository.findById(requestDTO.getMemberId())
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+                User member = userRepository.findById(requestDTO.getMemberId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
 
-        SubTask subTask = new SubTask();
-        subTask.setName(requestDTO.getName());
-        subTask.setDescription(requestDTO.getDescription());
-        subTask.setDueDate(requestDTO.getDueDate());
-        subTask.setProject(project);
-        subTask.setTl(tl);
-        subTask.setMember(member);
-        subTask.setStatus(Status.NOT_STARTED);
+                if (tl.getRole() != Role.TL) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Provided TL ID does not belong to a user with TL role");
+                }
 
-        SubTask saved = subTaskRepository.save(subTask);
-        return mapToResponse(saved);
-    }
+                if (member.getRole() != Role.MEMBER) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Provided Member ID does not belong to a user with Member role");
+                }
 
-    public List<SubTaskResponseDTO> getSubTasksByTL(String tlUsername) {
-        return subTaskRepository.findByTlUsername(tlUsername)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                SubTask subTask = new SubTask();
+                subTask.setName(requestDTO.getName());
+                subTask.setDescription(requestDTO.getDescription());
+                subTask.setDueDate(requestDTO.getDueDate());
+                subTask.setProject(project);
+                subTask.setTl(tl);
+                subTask.setMember(member);
+                subTask.setStatus(Status.NOT_STARTED);
 
-    public List<SubTaskResponseDTO> getSubTasksByMember(String memberUsername) {
-        return subTaskRepository.findByMemberUsername(memberUsername)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                SubTask saved = subTaskRepository.save(subTask);
+                return mapToResponse(saved);
+        }
 
-    public SubTaskResponseDTO updateStatus(Long subTaskId, Status newStatus) {
-        SubTask subTask = subTaskRepository.findById(subTaskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sub-task not found"));
+        public List<SubTaskResponseDTO> getSubTasksByTL(String tlUsername) {
+                return subTaskRepository.findByTlUsername(tlUsername)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        subTask.setStatus(newStatus);
-        SubTask updated = subTaskRepository.save(subTask);
+        public List<SubTaskResponseDTO> getSubTasksByMember(String memberUsername) {
+                return subTaskRepository.findByMemberUsername(memberUsername)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        return mapToResponse(updated);
-    }
+        public SubTaskResponseDTO updateStatus(Long subTaskId, Status newStatus) {
+                SubTask subTask = subTaskRepository.findById(subTaskId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Sub-task not found"));
 
-    private SubTaskResponseDTO mapToResponse(SubTask subTask) {
-        return new SubTaskResponseDTO(
-                subTask.getId(),
-                subTask.getName(),
-                subTask.getDescription(),
-                subTask.getDueDate(),
-                subTask.getStatus().name(),
-                subTask.getProject().getId(),
-                subTask.getTl().getUsername(),
-                subTask.getMember().getUsername());
-    }
+                subTask.setStatus(newStatus);
+                SubTask updated = subTaskRepository.save(subTask);
+
+                return mapToResponse(updated);
+        }
+
+        private SubTaskResponseDTO mapToResponse(SubTask subTask) {
+                return new SubTaskResponseDTO(
+                                subTask.getId(),
+                                subTask.getName(),
+                                subTask.getDescription(),
+                                subTask.getDueDate(),
+                                subTask.getStatus().name(),
+                                subTask.getProject().getId(),
+                                subTask.getTl().getUsername(),
+                                subTask.getMember().getUsername());
+        }
 }

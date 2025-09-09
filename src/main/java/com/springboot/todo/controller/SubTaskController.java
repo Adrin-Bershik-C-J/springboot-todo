@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.springboot.todo.dto.SubTaskRequestDTO;
@@ -34,11 +35,10 @@ public class SubTaskController {
 
     // TL fetches subtasks assigned to them
     @PreAuthorize("hasRole('TL')")
-    @GetMapping("/tl/{username}")
-    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByTL(
-            @PathVariable String username) {
-
-        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByTL(username);
+    @GetMapping("/tl")
+    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByTL(Authentication authentication) {
+        String tlUsername = authentication.getName();
+        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByTL(tlUsername);
         return ResponseEntity.ok(subtasks);
     }
 
