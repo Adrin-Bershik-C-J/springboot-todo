@@ -44,12 +44,11 @@ public class SubTaskController {
 
     // Member fetches subtasks assigned to them
     @PreAuthorize("hasRole('MEMBER')")
-    @GetMapping("/member/{username}")
-    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByMember(
-            @PathVariable String username) {
-
-        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByMember(username);
-        return ResponseEntity.ok(subtasks);
+    @GetMapping("/member")
+    public ResponseEntity<List<SubTaskResponseDTO>> getMySubTasks(Authentication authentication) {
+        String username = authentication.getName();
+        List<SubTaskResponseDTO> tasks = subTaskService.getSubTasksByMember(username);
+        return ResponseEntity.ok(tasks);
     }
 
     // TL or Member updates status of a sub-task

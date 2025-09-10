@@ -39,12 +39,27 @@ public class SubTaskService {
 
                 if (tl.getRole() != Role.TL) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Provided TL ID does not belong to a user with TL role");
+                                        "Provided user does not belong to TL role");
                 }
 
                 if (member.getRole() != Role.MEMBER) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                         "Provided Member ID does not belong to a user with Member role");
+                }
+
+                // New: Validate if TL and member are part of the project
+                if (!project.getTl().getUsername().equals(tl.getUsername())) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TL is not assigned to this project");
+                }
+                boolean memberExists = project.getMembers().stream()
+                                .anyMatch(m -> m.getUsername().equals(member.getUsername()));
+                if (!memberExists) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member is not part of the project");
+                }
+
+                if (requestDTO.getDueDate().isBefore(project.getDueDate())) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "Subtask due date must be after project creation date");
                 }
 
                 SubTask subTask = new SubTask();
