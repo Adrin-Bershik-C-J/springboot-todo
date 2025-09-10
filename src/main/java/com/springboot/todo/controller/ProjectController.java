@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.springboot.todo.dto.ProjectRequestDTO;
@@ -40,4 +41,18 @@ public class ProjectController {
         return ResponseEntity.ok(
                 projectService.getProjectsByManager(authentication.getName()));
     }
+
+    @PostMapping("/add-member")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ProjectResponseDTO> addMemberToProject(
+            @RequestParam Long projectId,
+            @RequestParam String memberUsername,
+            Authentication authentication) {
+
+        String managerUsername = authentication.getName();
+
+        ProjectResponseDTO updatedProject = projectService.addMember(projectId, memberUsername, managerUsername);
+        return ResponseEntity.ok(updatedProject);
+    }
+
 }

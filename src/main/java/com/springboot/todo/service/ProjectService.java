@@ -54,6 +54,33 @@ public class ProjectService {
         return mapToResponse(saved);
     }
 
+    public ProjectResponseDTO addMember(Long projectId, String memberUsername, String managerUsername) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        // ✅ Ensure the authenticated manager is the actual project manager
+        if (!project.getManager().getUsername().equals(managerUsername)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You are not the manager of this project");
+        }
+
+        User member = userRepository.findByUsername(memberUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+
+        if (member.getRole() != Role.MEMBER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not a Member");
+        }
+
+        if (project.getMembers().contains(member)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member already added");
+        }
+
+        project.getMembers().add(member);
+        Project updated = projectRepository.save(project);
+
+        return mapToResponse(updated);
+    }
+
     private ProjectResponseDTO mapToResponse(Project project) {
         return new ProjectResponseDTO(
                 project.getId(),
