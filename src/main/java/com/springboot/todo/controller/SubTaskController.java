@@ -38,7 +38,7 @@ public class SubTaskController {
     @GetMapping("/tl")
     public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByTL(Authentication authentication) {
         String tlUsername = authentication.getName();
-        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByTL(tlUsername);
+        List<SubTaskResponseDTO> subtasks = subTaskService.getAllSubTasksForTLProjects(tlUsername);
         return ResponseEntity.ok(subtasks);
     }
 
@@ -51,8 +51,17 @@ public class SubTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    // TL or Member updates status of a sub-task
-    @PreAuthorize("hasAnyRole('TL', 'MEMBER')")
+    // Manager fetches subtasks by project
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/manager")
+    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByManager(Authentication authentication) {
+        String managerUsername = authentication.getName();
+        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByManager(managerUsername);
+        return ResponseEntity.ok(subtasks);
+    }
+
+    // TL, Member, or Manager updates status of a sub-task
+    @PreAuthorize("hasAnyRole('MANAGER', 'TL', 'MEMBER')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<SubTaskResponseDTO> updateStatus(
             @PathVariable Long id,

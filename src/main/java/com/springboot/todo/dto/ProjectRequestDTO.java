@@ -20,9 +20,9 @@ public class ProjectRequestDTO {
     @FutureOrPresent(message = "Due date must be today or in the future")
     private LocalDate dueDate;
 
-    @NotNull(message = "TL id is required")
-    private Long tlId;
+    @NotBlank(message = "TL username is required")
+    private String tlUsername;
 
-    @NotEmpty(message = "At least one member id must be provided")
-    private List<Long> memberIds;
+    @NotEmpty(message = "At least one member username must be provided")
+    private List<String> memberUsernames;
 }

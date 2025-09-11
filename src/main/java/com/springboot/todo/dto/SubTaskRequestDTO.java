@@ -21,9 +21,6 @@ public class SubTaskRequestDTO {
     @NotNull(message = "Project ID is required")
     private Long projectId;
 
-    @NotNull(message = "TL ID is required")
-    private Long tlId;
-
-    @NotNull(message = "Member ID is required")
-    private Long memberId;
+    @NotBlank(message = "Assignee username is required")
+    private String assigneeUsername;
 }

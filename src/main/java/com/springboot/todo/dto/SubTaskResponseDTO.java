@@ -16,6 +16,7 @@ public class SubTaskResponseDTO {
     private LocalDate dueDate;
     private String status;
     private Long projectId;
+    private String projectName;
     private String tlUsername;
     private String memberUsername;
 }

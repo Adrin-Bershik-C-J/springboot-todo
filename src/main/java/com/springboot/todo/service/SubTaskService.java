@@ -31,35 +31,21 @@ public class SubTaskService {
                 Project project = projectRepository.findById(requestDTO.getProjectId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-                User tl = userRepository.findById(requestDTO.getTlId())
-                                .orElseThrow(() -> new ResourceNotFoundException("TL not found"));
+                User assignee = userRepository.findByUsername(requestDTO.getAssigneeUsername())
+                                .orElseThrow(() -> new ResourceNotFoundException("Assignee not found"));
 
-                User member = userRepository.findById(requestDTO.getMemberId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+                // Validate if assignee is part of the project (manager, TL, or member)
+                boolean isProjectMember = project.getManager().getUsername().equals(assignee.getUsername()) ||
+                                project.getTl().getUsername().equals(assignee.getUsername()) ||
+                                project.getMembers().stream().anyMatch(m -> m.getUsername().equals(assignee.getUsername()));
+                
+                if (!isProjectMember) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assignee is not part of the project");
+                }
 
-                if (tl.getRole() != Role.TL) {
+                if (requestDTO.getDueDate().isAfter(project.getDueDate())) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Provided user does not belong to TL role");
-                }
-
-                if (member.getRole() != Role.MEMBER) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Provided Member ID does not belong to a user with Member role");
-                }
-
-                // New: Validate if TL and member are part of the project
-                if (!project.getTl().getUsername().equals(tl.getUsername())) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TL is not assigned to this project");
-                }
-                boolean memberExists = project.getMembers().stream()
-                                .anyMatch(m -> m.getUsername().equals(member.getUsername()));
-                if (!memberExists) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member is not part of the project");
-                }
-
-                if (requestDTO.getDueDate().isBefore(project.getDueDate())) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Subtask due date must be after project creation date");
+                                        "Subtask due date must be before project due date");
                 }
 
                 SubTask subTask = new SubTask();
@@ -67,8 +53,8 @@ public class SubTaskService {
                 subTask.setDescription(requestDTO.getDescription());
                 subTask.setDueDate(requestDTO.getDueDate());
                 subTask.setProject(project);
-                subTask.setTl(tl);
-                subTask.setMember(member);
+                subTask.setTl(project.getTl());
+                subTask.setMember(assignee);
                 subTask.setStatus(Status.NOT_STARTED);
 
                 SubTask saved = subTaskRepository.save(subTask);
@@ -82,9 +68,30 @@ public class SubTaskService {
                                 .toList();
         }
 
+        public List<SubTaskResponseDTO> getAllSubTasksForTLProjects(String tlUsername) {
+                List<Project> tlProjects = projectRepository.findByTlUsername(tlUsername);
+                
+                return tlProjects.stream()
+                                .flatMap(project -> subTaskRepository.findByProjectId(project.getId()).stream())
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
         public List<SubTaskResponseDTO> getSubTasksByMember(String memberUsername) {
                 return subTaskRepository.findByMemberUsername(memberUsername)
                                 .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        public List<SubTaskResponseDTO> getSubTasksByManager(String managerUsername) {
+                User manager = userRepository.findByUsername(managerUsername)
+                                .orElseThrow(() -> new ResourceNotFoundException("Manager not found"));
+                
+                List<Project> managerProjects = projectRepository.findByManagerUsername(managerUsername);
+                
+                return managerProjects.stream()
+                                .flatMap(project -> subTaskRepository.findByProjectId(project.getId()).stream())
                                 .map(this::mapToResponse)
                                 .toList();
         }
@@ -107,6 +114,7 @@ public class SubTaskService {
                                 subTask.getDueDate(),
                                 subTask.getStatus().name(),
                                 subTask.getProject().getId(),
+                                subTask.getProject().getName(),
                                 subTask.getTl().getUsername(),
                                 subTask.getMember().getUsername());
         }

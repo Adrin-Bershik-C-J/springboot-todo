@@ -3,7 +3,6 @@ package com.springboot.todo.security;
 import java.security.Key;
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
@@ -14,11 +13,11 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String SECRET;
+    // Hardcoded secret key (Base64 encoded)
+    private static final String SECRET = "Z2lhbnRleHByZXNzYW55a25vd25zdGFpcnNiaWdnZXJiZWFuYnJvdGhlcnBvbGVsb24=";
 
-    @Value("${jwt.expiration}")
-    private long EXPIRATION;
+    // Hardcoded expiration time in milliseconds (1 hour)
+    private static final long EXPIRATION = 3600000;
 
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET);

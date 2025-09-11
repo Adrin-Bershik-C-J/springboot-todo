@@ -8,4 +8,5 @@ import com.springboot.todo.entity.Project;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByManagerUsername(String username);
+    List<Project> findByTlUsername(String username);
 }

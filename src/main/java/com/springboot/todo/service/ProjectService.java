@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.springboot.todo.dto.ProjectRequestDTO;
 import com.springboot.todo.dto.ProjectResponseDTO;
+import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.Project;
 import com.springboot.todo.entity.User;
 import com.springboot.todo.enums.Role;
@@ -28,15 +29,19 @@ public class ProjectService {
         User manager = userRepository.findByUsername(managerUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Manager not found"));
 
-        User tl = userRepository.findById(dto.getTlId())
+        User tl = userRepository.findByUsername(dto.getTlUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("TL not found"));
 
         if (tl.getRole() != Role.TL) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Provided TL ID does not belong to a user with TL role");
+                    "Provided TL username does not belong to a user with TL role");
         }
 
-        List<User> members = userRepository.findAllById(dto.getMemberIds());
+        List<User> members = dto.getMemberUsernames().stream()
+                .map(username -> userRepository.findByUsername(username)
+                        .orElseThrow(() -> new ResourceNotFoundException("Member not found: " + username)))
+                .toList();
+        
         if (members.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one valid member required");
         }
@@ -95,6 +100,53 @@ public class ProjectService {
     public List<ProjectResponseDTO> getProjectsByManager(String managerUsername) {
         List<Project> projects = projectRepository.findByManagerUsername(managerUsername);
 
+        return projects.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public ProjectResponseDTO updateProject(Long projectId, ProjectRequestDTO dto, String managerUsername) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        if (!project.getManager().getUsername().equals(managerUsername)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the manager of this project");
+        }
+
+        project.setName(dto.getName());
+        project.setDescription(dto.getDescription());
+        project.setDueDate(dto.getDueDate());
+
+        Project updated = projectRepository.save(project);
+        return mapToResponse(updated);
+    }
+
+
+
+    public List<UserResponseDTO> getProjectMembers(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        
+        List<UserResponseDTO> allMembers = new java.util.ArrayList<>();
+        
+        // Add manager
+        allMembers.add(new UserResponseDTO(project.getManager().getId(), project.getManager().getUsername(), 
+                project.getManager().getName(), project.getManager().getRole().name()));
+        
+        // Add TL
+        allMembers.add(new UserResponseDTO(project.getTl().getId(), project.getTl().getUsername(), 
+                project.getTl().getName(), project.getTl().getRole().name()));
+        
+        // Add all project members
+        project.getMembers().forEach(user -> 
+            allMembers.add(new UserResponseDTO(user.getId(), user.getUsername(), user.getName(), user.getRole().name()))
+        );
+        
+        return allMembers;
+    }
+
+    public List<ProjectResponseDTO> getProjectsByTL(String tlUsername) {
+        List<Project> projects = projectRepository.findByTlUsername(tlUsername);
         return projects.stream()
                 .map(this::mapToResponse)
                 .toList();

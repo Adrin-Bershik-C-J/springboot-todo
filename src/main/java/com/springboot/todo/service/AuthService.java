@@ -51,6 +51,6 @@ public class AuthService {
     public UserResponseDTO getCurrentUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getName());
+        return new UserResponseDTO(user.getId(), user.getUsername(), user.getName(), user.getRole().name());
     }
 }
