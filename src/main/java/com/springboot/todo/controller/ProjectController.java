@@ -82,4 +82,10 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectsByTL(authentication.getName()));
     }
 
+    @GetMapping("/users")
+    @PreAuthorize("hasAnyRole('MANAGER', 'TL', 'ADMIN')")
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        return ResponseEntity.ok(projectService.getAllUsers());
+    }
+
 }

@@ -151,4 +151,11 @@ public class ProjectService {
                 .map(this::mapToResponse)
                 .toList();
     }
+
+    public List<UserResponseDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> new UserResponseDTO(user.getId(), user.getUsername(), user.getName(), user.getRole().name()))
+                .toList();
+    }
 }

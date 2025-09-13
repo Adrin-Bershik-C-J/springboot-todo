@@ -1,16 +1,15 @@
 package com.springboot.todo.controller;
 
-import org.springframework.http.HttpStatus;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.springboot.todo.dto.RegisterRequestDTO;
-import com.springboot.todo.enums.Role;
+import com.springboot.todo.dto.ProjectResponseDTO;
+import com.springboot.todo.dto.SubTaskResponseDTO;
 import com.springboot.todo.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,13 +21,15 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    @GetMapping("/projects")
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/create-user")
-    public ResponseEntity<String> createUser(
-            @RequestBody RegisterRequestDTO request,
-            @RequestParam Role role) {
+    public ResponseEntity<List<ProjectResponseDTO>> getAllProjects() {
+        return ResponseEntity.ok(adminService.getAllProjects());
+    }
 
-        String message = adminService.createUser(request, role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
+    @GetMapping("/subtasks")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SubTaskResponseDTO>> getAllSubTasks() {
+        return ResponseEntity.ok(adminService.getAllSubTasks());
     }
 }
