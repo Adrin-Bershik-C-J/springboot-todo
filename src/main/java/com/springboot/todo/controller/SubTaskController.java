@@ -70,4 +70,21 @@ public class SubTaskController {
         SubTaskResponseDTO updated = subTaskService.updateStatus(id, status);
         return ResponseEntity.ok(updated);
     }
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
+    @PutMapping("/{id}")
+    public ResponseEntity<SubTaskResponseDTO> updateSubTask(
+            @PathVariable Long id,
+            @Valid @RequestBody SubTaskRequestDTO requestDTO,
+            Authentication authentication) {
+        SubTaskResponseDTO updated = subTaskService.updateSubTask(id, requestDTO, authentication.getName());
+        return ResponseEntity.ok(updated);
+    }
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubTask(@PathVariable Long id, Authentication authentication) {
+        subTaskService.deleteSubTask(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

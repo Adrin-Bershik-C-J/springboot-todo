@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,6 +87,13 @@ public class ProjectController {
     @PreAuthorize("hasAnyRole('MANAGER', 'TL', 'ADMIN')")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(projectService.getAllUsers());
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id, Authentication authentication) {
+        projectService.deleteProject(id, authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -10,10 +10,12 @@ import com.springboot.todo.dto.ProjectRequestDTO;
 import com.springboot.todo.dto.ProjectResponseDTO;
 import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.Project;
+import com.springboot.todo.entity.SubTask;
 import com.springboot.todo.entity.User;
 import com.springboot.todo.enums.Role;
 import com.springboot.todo.exception.ResourceNotFoundException;
 import com.springboot.todo.repository.ProjectRepository;
+import com.springboot.todo.repository.SubTaskRepository;
 import com.springboot.todo.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class ProjectService {
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final SubTaskRepository subTaskRepository;
 
     public ProjectResponseDTO createProject(ProjectRequestDTO dto, String managerUsername) {
         User manager = userRepository.findByUsername(managerUsername)
@@ -157,5 +160,21 @@ public class ProjectService {
         return users.stream()
                 .map(user -> new UserResponseDTO(user.getId(), user.getUsername(), user.getName(), user.getRole().name()))
                 .toList();
+    }
+
+    public void deleteProject(Long projectId, String managerUsername) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        if (!project.getManager().getUsername().equals(managerUsername)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the manager of this project");
+        }
+
+        // Delete all sub-tasks associated with this project first
+        List<SubTask> subTasks = subTaskRepository.findByProjectId(projectId);
+        subTaskRepository.deleteAll(subTasks);
+
+        // Now delete the project
+        projectRepository.delete(project);
     }
 }

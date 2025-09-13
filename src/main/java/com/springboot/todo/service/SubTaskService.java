@@ -106,6 +106,51 @@ public class SubTaskService {
                 return mapToResponse(updated);
         }
 
+        public SubTaskResponseDTO updateSubTask(Long subTaskId, SubTaskRequestDTO requestDTO, String username) {
+                SubTask subTask = subTaskRepository.findById(subTaskId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Sub-task not found"));
+
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                // Manager can edit all sub-tasks from their projects, TL can edit from their projects
+                boolean canEdit = (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
+                                (user.getRole() == Role.TL && subTask.getProject().getTl().getUsername().equals(username));
+
+                if (!canEdit) {
+                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to edit this sub-task");
+                }
+
+                User assignee = userRepository.findByUsername(requestDTO.getAssigneeUsername())
+                                .orElseThrow(() -> new ResourceNotFoundException("Assignee not found"));
+
+                subTask.setName(requestDTO.getName());
+                subTask.setDescription(requestDTO.getDescription());
+                subTask.setDueDate(requestDTO.getDueDate());
+                subTask.setMember(assignee);
+
+                SubTask updated = subTaskRepository.save(subTask);
+                return mapToResponse(updated);
+        }
+
+        public void deleteSubTask(Long subTaskId, String username) {
+                SubTask subTask = subTaskRepository.findById(subTaskId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Sub-task not found"));
+
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+                // Manager can delete all sub-tasks from their projects, TL can delete from their projects
+                boolean canDelete = (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
+                                (user.getRole() == Role.TL && subTask.getProject().getTl().getUsername().equals(username));
+
+                if (!canDelete) {
+                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this sub-task");
+                }
+
+                subTaskRepository.delete(subTask);
+        }
+
         private SubTaskResponseDTO mapToResponse(SubTask subTask) {
                 return new SubTaskResponseDTO(
                                 subTask.getId(),
