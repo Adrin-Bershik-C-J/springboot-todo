@@ -162,12 +162,16 @@ public class ProjectService {
                 .toList();
     }
 
-    public void deleteProject(Long projectId, String managerUsername) {
+    public void deleteProject(Long projectId, String username) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        if (!project.getManager().getUsername().equals(managerUsername)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the manager of this project");
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Allow deletion if user is admin or the project manager
+        if (user.getRole() != Role.ADMIN && !project.getManager().getUsername().equals(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this project");
         }
 
         // Delete all sub-tasks associated with this project first

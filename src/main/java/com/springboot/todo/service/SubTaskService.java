@@ -140,8 +140,9 @@ public class SubTaskService {
                 User user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                // Manager can delete all sub-tasks from their projects, TL can delete from their projects
-                boolean canDelete = (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
+                // Admin can delete any sub-task, Manager can delete sub-tasks from their projects, TL can delete from their projects
+                boolean canDelete = user.getRole() == Role.ADMIN ||
+                                (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
                                 (user.getRole() == Role.TL && subTask.getProject().getTl().getUsername().equals(username));
 
                 if (!canDelete) {

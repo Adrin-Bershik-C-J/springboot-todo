@@ -10,6 +10,8 @@ import java.util.List;
 import com.springboot.todo.dto.RegisterRequestDTO;
 import com.springboot.todo.dto.ProjectResponseDTO;
 import com.springboot.todo.dto.SubTaskResponseDTO;
+import com.springboot.todo.dto.UserCreateDTO;
+import com.springboot.todo.dto.UserResponseDTO;
 import com.springboot.todo.entity.Project;
 import com.springboot.todo.entity.SubTask;
 import com.springboot.todo.entity.User;
@@ -45,6 +47,27 @@ public class AdminService {
         return role + " user created successfully";
     }
 
+    public UserResponseDTO createUser(UserCreateDTO userCreateDTO, Role role) {
+        if (userRepository.findByUsername(userCreateDTO.getUsername()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+        }
+
+        User user = new User(
+                userCreateDTO.getName(),
+                userCreateDTO.getUsername(),
+                passwordEncoder.encode(userCreateDTO.getPassword()),
+                role);
+
+        User savedUser = userRepository.save(user);
+
+        return new UserResponseDTO(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getUsername(),
+                savedUser.getRole().name()
+        );
+    }
+
     public List<ProjectResponseDTO> getAllProjects() {
         List<Project> projects = projectRepository.findAll();
         return projects.stream()
@@ -73,6 +96,33 @@ public class AdminService {
         );
     }
 
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        
+        if (user.getRole() == Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot delete admin user");
+        }
+        
+        // Check if user is referenced in any projects
+        List<Project> managerProjects = projectRepository.findByManagerUsername(username);
+        List<Project> tlProjects = projectRepository.findByTlUsername(username);
+        
+        if (!managerProjects.isEmpty() || !tlProjects.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                "Cannot delete user: User is assigned as manager or team lead in active projects");
+        }
+        
+        // Check if user has assigned subtasks
+        List<SubTask> assignedSubTasks = subTaskRepository.findByMemberUsername(username);
+        if (!assignedSubTasks.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                "Cannot delete user: User has assigned sub-tasks");
+        }
+        
+        userRepository.delete(user);
+    }
+
     private SubTaskResponseDTO mapSubTaskToResponse(SubTask subTask) {
         return new SubTaskResponseDTO(
                 subTask.getId(),
@@ -83,7 +133,8 @@ public class AdminService {
                 subTask.getProject().getId(),
                 subTask.getProject().getName(),
                 subTask.getTl().getUsername(),
-                subTask.getMember().getUsername()
+                subTask.getMember().getUsername(),
+                subTask.getCreatedBy().getUsername()
         );
     }
 }

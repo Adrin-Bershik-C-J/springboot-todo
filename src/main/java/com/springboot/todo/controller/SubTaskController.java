@@ -27,9 +27,10 @@ public class SubTaskController {
     @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
     @PostMapping
     public ResponseEntity<SubTaskResponseDTO> createSubTask(
-            @Valid @RequestBody SubTaskRequestDTO requestDTO) {
+            @Valid @RequestBody SubTaskRequestDTO requestDTO,
+            Authentication authentication) {
 
-        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO);
+        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
@@ -81,7 +82,7 @@ public class SubTaskController {
         return ResponseEntity.ok(updated);
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'TL', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubTask(@PathVariable Long id, Authentication authentication) {
         subTaskService.deleteSubTask(id, authentication.getName());
