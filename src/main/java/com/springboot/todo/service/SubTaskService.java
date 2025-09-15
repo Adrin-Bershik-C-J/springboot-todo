@@ -27,9 +27,12 @@ public class SubTaskService {
         private final ProjectRepository projectRepository;
         private final UserRepository userRepository;
 
-        public SubTaskResponseDTO createSubTask(SubTaskRequestDTO requestDTO) {
+        public SubTaskResponseDTO createSubTask(SubTaskRequestDTO requestDTO, String creatorUsername) {
                 Project project = projectRepository.findById(requestDTO.getProjectId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+                User creator = userRepository.findByUsername(creatorUsername)
+                                .orElseThrow(() -> new ResourceNotFoundException("Creator not found"));
 
                 User assignee = userRepository.findByUsername(requestDTO.getAssigneeUsername())
                                 .orElseThrow(() -> new ResourceNotFoundException("Assignee not found"));
@@ -55,6 +58,7 @@ public class SubTaskService {
                 subTask.setProject(project);
                 subTask.setTl(project.getTl());
                 subTask.setMember(assignee);
+                subTask.setCreatedBy(creator);
                 subTask.setStatus(Status.NOT_STARTED);
 
                 SubTask saved = subTaskRepository.save(subTask);
@@ -96,6 +100,13 @@ public class SubTaskService {
                                 .toList();
         }
 
+        public List<SubTaskResponseDTO> getSubTasksCreatedBy(String creatorUsername) {
+                return subTaskRepository.findByCreatedByUsername(creatorUsername)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
         public SubTaskResponseDTO updateStatus(Long subTaskId, Status newStatus) {
                 SubTask subTask = subTaskRepository.findById(subTaskId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Sub-task not found"));
@@ -113,9 +124,9 @@ public class SubTaskService {
                 User user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                // Manager can edit all sub-tasks from their projects, TL can edit from their projects
+                // Manager can edit all sub-tasks from their projects, TL can only edit sub-tasks they created
                 boolean canEdit = (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
-                                (user.getRole() == Role.TL && subTask.getProject().getTl().getUsername().equals(username));
+                                (user.getRole() == Role.TL && subTask.getCreatedBy() != null && subTask.getCreatedBy().getUsername().equals(username));
 
                 if (!canEdit) {
                         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to edit this sub-task");
@@ -140,10 +151,10 @@ public class SubTaskService {
                 User user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                // Admin can delete any sub-task, Manager can delete sub-tasks from their projects, TL can delete from their projects
+                // Admin can delete any sub-task, Manager can delete sub-tasks from their projects, TL can only delete sub-tasks they created
                 boolean canDelete = user.getRole() == Role.ADMIN ||
                                 (user.getRole() == Role.MANAGER && subTask.getProject().getManager().getUsername().equals(username)) ||
-                                (user.getRole() == Role.TL && subTask.getProject().getTl().getUsername().equals(username));
+                                (user.getRole() == Role.TL && subTask.getCreatedBy() != null && subTask.getCreatedBy().getUsername().equals(username));
 
                 if (!canDelete) {
                         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to delete this sub-task");
@@ -162,6 +173,7 @@ public class SubTaskService {
                                 subTask.getProject().getId(),
                                 subTask.getProject().getName(),
                                 subTask.getTl().getUsername(),
-                                subTask.getMember().getUsername());
+                                subTask.getMember().getUsername(),
+                                subTask.getCreatedBy() != null ? subTask.getCreatedBy().getUsername() : "Unknown");
         }
 }

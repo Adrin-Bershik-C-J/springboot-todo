@@ -19,4 +19,5 @@ public class SubTaskResponseDTO {
     private String projectName;
     private String tlUsername;
     private String memberUsername;
+    private String createdByUsername;
 }

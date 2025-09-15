@@ -12,4 +12,6 @@ public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
     List<SubTask> findByMemberUsername(String username);
     
     List<SubTask> findByProjectId(Long projectId);
+    
+    List<SubTask> findByCreatedByUsername(String username);
 }

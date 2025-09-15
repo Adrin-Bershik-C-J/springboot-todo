@@ -41,6 +41,10 @@ public class SubTask {
     @JoinColumn(name = "member_id")
     private User member;
 
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 }

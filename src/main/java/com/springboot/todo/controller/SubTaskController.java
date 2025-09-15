@@ -27,9 +27,10 @@ public class SubTaskController {
     @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
     @PostMapping
     public ResponseEntity<SubTaskResponseDTO> createSubTask(
-            @Valid @RequestBody SubTaskRequestDTO requestDTO) {
+            @Valid @RequestBody SubTaskRequestDTO requestDTO,
+            Authentication authentication) {
 
-        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO);
+        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
@@ -39,6 +40,15 @@ public class SubTaskController {
     public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByTL(Authentication authentication) {
         String tlUsername = authentication.getName();
         List<SubTaskResponseDTO> subtasks = subTaskService.getAllSubTasksForTLProjects(tlUsername);
+        return ResponseEntity.ok(subtasks);
+    }
+
+    // TL fetches subtasks created by them
+    @PreAuthorize("hasRole('TL')")
+    @GetMapping("/tl/created")
+    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksCreatedByTL(Authentication authentication) {
+        String tlUsername = authentication.getName();
+        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksCreatedBy(tlUsername);
         return ResponseEntity.ok(subtasks);
     }
 

@@ -133,7 +133,8 @@ public class AdminService {
                 subTask.getProject().getId(),
                 subTask.getProject().getName(),
                 subTask.getTl().getUsername(),
-                subTask.getMember().getUsername()
+                subTask.getMember().getUsername(),
+                subTask.getCreatedBy().getUsername()
         );
     }
 }
