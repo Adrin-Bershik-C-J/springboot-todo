@@ -27,10 +27,9 @@ public class SubTaskController {
     @PreAuthorize("hasAnyRole('MANAGER', 'TL')")
     @PostMapping
     public ResponseEntity<SubTaskResponseDTO> createSubTask(
-            @Valid @RequestBody SubTaskRequestDTO requestDTO,
-            Authentication authentication) {
+            @Valid @RequestBody SubTaskRequestDTO requestDTO) {
 
-        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO, authentication.getName());
+        SubTaskResponseDTO responseDTO = subTaskService.createSubTask(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
