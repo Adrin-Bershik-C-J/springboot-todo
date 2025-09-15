@@ -2,6 +2,9 @@ package com.springboot.todo.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,18 +40,26 @@ public class SubTaskController {
     // TL fetches subtasks assigned to them
     @PreAuthorize("hasRole('TL')")
     @GetMapping("/tl")
-    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByTL(Authentication authentication) {
+    public ResponseEntity<Page<SubTaskResponseDTO>> getSubTasksByTL(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         String tlUsername = authentication.getName();
-        List<SubTaskResponseDTO> subtasks = subTaskService.getAllSubTasksForTLProjects(tlUsername);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SubTaskResponseDTO> subtasks = subTaskService.getAllSubTasksForTLProjects(tlUsername, pageable);
         return ResponseEntity.ok(subtasks);
     }
 
     // TL fetches subtasks created by them
     @PreAuthorize("hasRole('TL')")
     @GetMapping("/tl/created")
-    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksCreatedByTL(Authentication authentication) {
+    public ResponseEntity<Page<SubTaskResponseDTO>> getSubTasksCreatedByTL(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         String tlUsername = authentication.getName();
-        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksCreatedBy(tlUsername);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksCreatedBy(tlUsername, pageable);
         return ResponseEntity.ok(subtasks);
     }
 
@@ -64,9 +75,13 @@ public class SubTaskController {
     // Manager fetches subtasks by project
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/manager")
-    public ResponseEntity<List<SubTaskResponseDTO>> getSubTasksByManager(Authentication authentication) {
+    public ResponseEntity<Page<SubTaskResponseDTO>> getSubTasksByManager(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         String managerUsername = authentication.getName();
-        List<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByManager(managerUsername);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SubTaskResponseDTO> subtasks = subTaskService.getSubTasksByManager(managerUsername, pageable);
         return ResponseEntity.ok(subtasks);
     }
 

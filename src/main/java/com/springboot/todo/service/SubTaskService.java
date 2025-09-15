@@ -2,6 +2,9 @@ package com.springboot.todo.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -72,13 +75,19 @@ public class SubTaskService {
                                 .toList();
         }
 
-        public List<SubTaskResponseDTO> getAllSubTasksForTLProjects(String tlUsername) {
+        public Page<SubTaskResponseDTO> getAllSubTasksForTLProjects(String tlUsername, Pageable pageable) {
                 List<Project> tlProjects = projectRepository.findByTlUsername(tlUsername);
                 
-                return tlProjects.stream()
+                List<SubTaskResponseDTO> allSubTasks = tlProjects.stream()
                                 .flatMap(project -> subTaskRepository.findByProjectId(project.getId()).stream())
                                 .map(this::mapToResponse)
                                 .toList();
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), allSubTasks.size());
+                List<SubTaskResponseDTO> pageContent = start < allSubTasks.size() ? allSubTasks.subList(start, end) : List.of();
+                
+                return new PageImpl<>(pageContent, pageable, allSubTasks.size());
         }
 
         public List<SubTaskResponseDTO> getSubTasksByMember(String memberUsername) {
@@ -88,23 +97,35 @@ public class SubTaskService {
                                 .toList();
         }
 
-        public List<SubTaskResponseDTO> getSubTasksByManager(String managerUsername) {
+        public Page<SubTaskResponseDTO> getSubTasksByManager(String managerUsername, Pageable pageable) {
                 User manager = userRepository.findByUsername(managerUsername)
                                 .orElseThrow(() -> new ResourceNotFoundException("Manager not found"));
                 
                 List<Project> managerProjects = projectRepository.findByManagerUsername(managerUsername);
                 
-                return managerProjects.stream()
+                List<SubTaskResponseDTO> allSubTasks = managerProjects.stream()
                                 .flatMap(project -> subTaskRepository.findByProjectId(project.getId()).stream())
                                 .map(this::mapToResponse)
                                 .toList();
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), allSubTasks.size());
+                List<SubTaskResponseDTO> pageContent = start < allSubTasks.size() ? allSubTasks.subList(start, end) : List.of();
+                
+                return new PageImpl<>(pageContent, pageable, allSubTasks.size());
         }
 
-        public List<SubTaskResponseDTO> getSubTasksCreatedBy(String creatorUsername) {
-                return subTaskRepository.findByCreatedByUsername(creatorUsername)
+        public Page<SubTaskResponseDTO> getSubTasksCreatedBy(String creatorUsername, Pageable pageable) {
+                List<SubTaskResponseDTO> allSubTasks = subTaskRepository.findByCreatedByUsername(creatorUsername)
                                 .stream()
                                 .map(this::mapToResponse)
                                 .toList();
+                
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), allSubTasks.size());
+                List<SubTaskResponseDTO> pageContent = start < allSubTasks.size() ? allSubTasks.subList(start, end) : List.of();
+                
+                return new PageImpl<>(pageContent, pageable, allSubTasks.size());
         }
 
         public SubTaskResponseDTO updateStatus(Long subTaskId, Status newStatus) {
