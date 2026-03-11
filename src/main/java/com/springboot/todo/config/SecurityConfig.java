@@ -50,7 +50,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:4200"));
+                    config.setAllowedOrigins(List.of(
+                        "http://localhost:4200",
+                        // "https://localhost:4200",
+                        "https://*.netlify.app"
+                        // "https://*.onrender.com"
+                    ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
