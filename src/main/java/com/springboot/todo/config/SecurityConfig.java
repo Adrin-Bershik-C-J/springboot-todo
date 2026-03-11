@@ -53,7 +53,8 @@ public class SecurityConfig {
                     config.setAllowedOrigins(List.of(
                         "http://localhost:4200",
                         // "https://localhost:4200",
-                        "https://*.netlify.app"
+                        "https://eps-task-hub.netlify.app",
+                        // "https://*.netlify.app",
                         // "https://*.onrender.com"
                     ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
