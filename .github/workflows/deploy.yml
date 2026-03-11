@@ -53,8 +53,8 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
-    - name: Deploy to Render
-      if: github.ref == 'refs/heads/main'
-      run: |
-        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" \
-          -H "Content-Type: application/json"
+    # - name: Deploy to Render
+    #   if: github.ref == 'refs/heads/main'
+    #   run: |
+    #     curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+    #       -H "Content-Type: application/json"
